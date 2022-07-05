@@ -27,10 +27,8 @@ func Init() *gorm.DB {
 	var err error
 	db, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
-		PreferSimpleProtocol: true, // disables implicit prepared statement usage
-	}), &gorm.Config{
-		SkipDefaultTransaction: true,
-	})
+		PreferSimpleProtocol: false, // disables implicit prepared statement usage
+	}), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
