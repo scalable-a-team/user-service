@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"user-service/controllers"
+	"user-service/db"
 	"user-service/forms"
 	"user-service/models"
 )
@@ -15,6 +17,8 @@ func main() {
 	port := os.Getenv("PORT")
 	secretKey := os.Getenv("JWT_SECRET_KEY")
 	identityKey := os.Getenv("JWT_IDENTITY_KEY")
+
+	db.Init()
 	r := gin.Default()
 
 	// the jwt middleware
@@ -27,7 +31,7 @@ func main() {
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*models.User); ok {
 				return jwt.MapClaims{
-					identityKey: v.UserName,
+					identityKey: v.Username,
 				}
 			}
 			return jwt.MapClaims{}
@@ -35,7 +39,7 @@ func main() {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &models.User{
-				UserName: claims[identityKey].(string),
+				Username: claims[identityKey].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -43,25 +47,17 @@ func main() {
 			if err := c.ShouldBind(&loginData); err != nil {
 				return "", jwt.ErrMissingLoginValues
 			}
-			userID := loginData.Username
-			password := loginData.Password
+			var userModel = models.User{}
 
-			// TODO: DB connection for login
-			if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
-				return &models.User{
-					UserName:  userID,
-					LastName:  "Bo-Yi",
-					FirstName: "Wu",
-				}, nil
+			isSuccess, err := userModel.Login(loginData)
+			if err != nil || !isSuccess {
+				return nil, jwt.ErrFailedAuthentication
 			}
 
-			return nil, jwt.ErrFailedAuthentication
+			return userModel, nil
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if user, ok := data.(*models.User); ok && user.UserName == "admin" {
-				return true
-			}
-			return false
+			return true
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
@@ -102,6 +98,7 @@ func main() {
 
 	auth := r.Group("/auth")
 	auth.POST("/login", authMiddleware.LoginHandler)
+	auth.POST("/register", controllers.Register)
 	// Refresh time can be longer than token timeout
 	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
 
