@@ -18,7 +18,8 @@ func main() {
 	secretKey := os.Getenv("JWT_SECRET_KEY")
 	identityKey := os.Getenv("JWT_IDENTITY_KEY")
 
-	db.Init()
+	dbInstance := db.Init()
+	dbInstance.AutoMigrate(&models.User{}, &models.UserProfile{})
 	r := gin.Default()
 
 	// the jwt middleware

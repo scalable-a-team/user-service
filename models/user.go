@@ -3,20 +3,24 @@ package models
 import (
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/html"
+	"gorm.io/gorm"
 	"strings"
 	"user-service/db"
 	"user-service/forms"
 )
 
 type UserProfile struct {
+	ID        int
 	FirstName string
 	LastName  string
 }
 
 type User struct {
-	Username string
-	Password string
-	Profile  UserProfile
+	ID        int
+	Username  string
+	Password  string
+	Profile   UserProfile `gorm:"foreignKey:ProfileID"`
+	ProfileID int
 }
 
 func (u *User) CreateUser(registerForm forms.UserSignUp) (*User, error) {
@@ -52,7 +56,7 @@ func (u *User) Login(form forms.UserSignIn) (bool, error) {
 	return true, nil
 }
 
-func (u *User) BeforeCreate() error {
+func (u *User) BeforeCreate(tx *gorm.DB) error {
 
 	//turn password into hash
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
