@@ -97,7 +97,7 @@ func main() {
 		log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error())
 	}
 
-	auth := r.Group("/auth")
+	auth := r.Group("/api/auth")
 	auth.POST("/login", authMiddleware.LoginHandler)
 	auth.POST("/register", controllers.Register)
 	// Refresh time can be longer than token timeout
