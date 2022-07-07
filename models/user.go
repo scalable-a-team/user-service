@@ -11,41 +11,57 @@ import (
 	"user-service/forms"
 )
 
-type UserGroup struct {
-	ID   int
+type RoleGroup struct {
+	gorm.Model
 	Name string
+	User []User
 }
 
-func (ug *UserGroup) GetGroup(groupName string) error {
-	if err := db.GetDB().Where("name = ?", groupName).FirstOrCreate(ug).Error; err != nil {
+func (ug *RoleGroup) GetGroup(groupName string) error {
+	if err := db.GetDB().Where(RoleGroup{Name: groupName}).FirstOrCreate(ug).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-type UserProfile struct {
-	ID        int
+type User struct {
+	gorm.Model
+	Username      string
+	Password      string
+	Profile       Profile `gorm:"OnDelete:CASCADE"`
+	RoleGroupID   uint
+	RoleGroupName string `gorm:"-"`
+}
+
+type Profile struct {
+	gorm.Model
 	FirstName string
 	LastName  string
+	UserID    uint
 }
 
-type User struct {
-	ID        int
-	Username  string
-	Password  string
-	Profile   UserProfile `gorm:"foreignKey:ProfileID"`
-	ProfileID int
-	Group     UserGroup `gorm:"foreignKey:GroupID"`
-	GroupID   int
+func (u *User) RetrieveByUsername(username string) error {
+	if err := db.GetDB().Where("username = ?", username).First(u).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
-func (u *User) CreateCustomer(registerForm forms.UserSignUp) (*User, error) {
+func (u *User) IsUsernameExist(username string) (bool, error) {
 	var userExists bool
 	userResultError := db.GetDB().
 		Model(&User{}).
 		Select("count(*) > 0").
-		Where("username = ?", registerForm.Username).
+		Where("username = ?", username).
 		Find(&userExists).Error
+	if userResultError != nil {
+		return false, userResultError
+	}
+	return userExists, nil
+}
+
+func (u *User) CreateCustomer(registerForm forms.UserSignUp) (*User, error) {
+	userExists, userResultError := u.IsUsernameExist(registerForm.Username)
 	if userResultError != nil {
 		return &User{}, userResultError
 	}
@@ -53,19 +69,20 @@ func (u *User) CreateCustomer(registerForm forms.UserSignUp) (*User, error) {
 		return &User{}, errors.New("user already exists")
 	}
 
-	var userGroup UserGroup
+	var userGroup RoleGroup
 	if err := userGroup.GetGroup(enums.Customer); err != nil {
 		return &User{}, err
 	}
-	var profile = UserProfile{
+	var profile = Profile{
 		FirstName: registerForm.FirstName,
 		LastName:  registerForm.LastName,
 	}
 	var user = User{
-		Username: registerForm.Username,
-		Password: registerForm.Password,
-		Profile:  profile,
-		Group:    userGroup,
+		Username:      registerForm.Username,
+		Password:      registerForm.Password,
+		Profile:       profile,
+		RoleGroupID:   userGroup.ID,
+		RoleGroupName: enums.Customer,
 	}
 
 	if err := db.GetDB().Create(&user).Error; err != nil {
@@ -75,7 +92,10 @@ func (u *User) CreateCustomer(registerForm forms.UserSignUp) (*User, error) {
 }
 
 func (u *User) Login(form forms.UserSignIn) (bool, error) {
-	if err := db.GetDB().Where("username = ?", form.Username).First(u).Error; err != nil {
+	if err := db.GetDB().
+		Where("username = ?", form.Username).
+		Preload("Profile").
+		First(u).Error; err != nil {
 		return false, err
 	}
 
@@ -86,7 +106,11 @@ func (u *User) Login(form forms.UserSignIn) (bool, error) {
 	if err := bcrypt.CompareHashAndPassword(byteHashedPassword, bytePassword); err != nil {
 		return false, err
 	}
-
+	var roleGroup RoleGroup
+	if err := db.GetDB().Where("id = ?", u.RoleGroupID).FirstOrCreate(&roleGroup).Error; err != nil {
+		return false, err
+	}
+	u.RoleGroupName = roleGroup.Name
 	return true, nil
 }
 
