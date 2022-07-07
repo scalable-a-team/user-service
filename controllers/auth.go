@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"user-service/forms"
@@ -11,16 +9,14 @@ import (
 
 var userModel = new(models.User)
 
-func Register(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
-	fmt.Println(claims)
+func RegisterCustomer(c *gin.Context) {
 	var input forms.UserSignUp
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if _, err := userModel.CreateUser(input); err != nil {
+	if _, err := userModel.CreateCustomer(input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
