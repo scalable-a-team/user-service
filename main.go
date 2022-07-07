@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -33,6 +34,7 @@ func main() {
 			if v, ok := data.(*models.User); ok {
 				return jwt.MapClaims{
 					identityKey: v.Username,
+					"iss":       "login-issuer",
 				}
 			}
 			return jwt.MapClaims{}
@@ -54,8 +56,7 @@ func main() {
 			if err != nil || !isSuccess {
 				return nil, jwt.ErrFailedAuthentication
 			}
-
-			return userModel, nil
+			return &userModel, nil
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
 			return true
@@ -102,8 +103,22 @@ func main() {
 	auth.POST("/register", controllers.Register)
 	// Refresh time can be longer than token timeout
 	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+	auth.GET("/debug/claims", getClaims)
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getClaims(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	for k, vals := range c.Request.Header {
+		fmt.Println("%s", k)
+		for _, v := range vals {
+			fmt.Println("\t%s", v)
+		}
+	}
+	fmt.Println(claims)
+	c.Status(http.StatusNoContent)
+	return
 }
