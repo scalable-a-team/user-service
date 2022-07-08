@@ -9,8 +9,6 @@ import (
 	"user-service/models"
 )
 
-// @BasePath /api/auth
-
 // PingExample godoc
 // @Summary Login user
 // @Schemes
@@ -20,7 +18,7 @@ import (
 // @Produce json
 // @Param data body forms.UserSignIn true "Login input"
 // @Success 200 {object} forms.LoginResponse
-// @Router /login [post]
+// @Router /user/login [post]
 func Login(c *gin.Context) {
 	var loginData forms.UserSignIn
 	if err := c.ShouldBind(&loginData); err != nil {
@@ -73,7 +71,7 @@ func Login(c *gin.Context) {
 // @Produce json
 // @Param data body forms.UserSignUp true "Signup input"
 // @Success 200 {object} forms.LoginResponse
-// @Router /register [post]
+// @Router /user/register [post]
 func RegisterCustomer(c *gin.Context) {
 	var input forms.UserSignUp
 
@@ -117,7 +115,7 @@ func RegisterCustomer(c *gin.Context) {
 // @Produce json
 // @Param data body forms.RefreshTokenRequest true "Receive refresh token"
 // @Success 200 {string} refresh_token
-// @Router /refresh_token [post]
+// @Router /user/refresh_token [post]
 func RefreshTokenHandler(c *gin.Context) {
 	var input forms.RefreshTokenRequest
 

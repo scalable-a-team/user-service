@@ -28,8 +28,8 @@ import (
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host      localhost
-// @BasePath  /api/auth
+// @host      localhost:8000
+// @BasePath  /api/user
 
 // @securityDefinitions.basic  BasicAuth
 func main() {
@@ -45,10 +45,10 @@ func main() {
 	// the jwt middleware
 	middlewares.InitCustomerJWTMiddleware()
 	middlewares.InitSellerJWTMiddleware()
-	r.GET("/api/auth/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.GET("api/auth/debug", getClaims)
+	r.GET("/api/user/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("api/user/debug", getClaims)
 
-	customerRouter := r.Group("/api/auth/customer")
+	customerRouter := r.Group("/api/user/customer")
 	customerRouter.POST("/login", controllers.Login)
 	customerRouter.POST("/register", controllers.RegisterCustomer)
 	customerRouter.POST("/refresh_token", controllers.RefreshTokenHandler)

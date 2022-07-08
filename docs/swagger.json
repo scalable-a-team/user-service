@@ -15,10 +15,10 @@
         },
         "version": "1.0"
     },
-    "host": "localhost",
-    "basePath": "/api/auth",
+    "host": "localhost:8000",
+    "basePath": "/api/user",
     "paths": {
-        "/login": {
+        "/user/login": {
             "post": {
                 "description": "Return JWT access and refresh pair, alongside user profile",
                 "consumes": [
@@ -52,7 +52,7 @@
                 }
             }
         },
-        "/refresh_token": {
+        "/user/refresh_token": {
             "post": {
                 "description": "Return JWT access token given refresh token",
                 "consumes": [
@@ -86,7 +86,7 @@
                 }
             }
         },
-        "/register": {
+        "/user/register": {
             "post": {
                 "description": "Register buyer account",
                 "consumes": [

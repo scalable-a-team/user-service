@@ -25,7 +25,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/login": {
+        "/user/login": {
             "post": {
                 "description": "Return JWT access and refresh pair, alongside user profile",
                 "consumes": [
@@ -59,7 +59,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/refresh_token": {
+        "/user/refresh_token": {
             "post": {
                 "description": "Return JWT access token given refresh token",
                 "consumes": [
@@ -93,7 +93,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/register": {
+        "/user/register": {
             "post": {
                 "description": "Register buyer account",
                 "consumes": [
@@ -239,8 +239,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost",
-	BasePath:         "/api/auth",
+	Host:             "localhost:8000",
+	BasePath:         "/api/user",
 	Schemes:          []string{},
 	Title:            "User Service API",
 	Description:      "This is a sample server celler server.",

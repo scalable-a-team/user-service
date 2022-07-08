@@ -1,4 +1,4 @@
-basePath: /api/auth
+basePath: /api/user
 definitions:
   forms.LoginResponse:
     properties:
@@ -65,7 +65,7 @@ definitions:
     - password
     - username
     type: object
-host: localhost
+host: localhost:8000
 info:
   contact:
     email: support@swagger.io
@@ -79,7 +79,7 @@ info:
   title: User Service API
   version: "1.0"
 paths:
-  /login:
+  /user/login:
     post:
       consumes:
       - application/json
@@ -101,7 +101,7 @@ paths:
       summary: Login user
       tags:
       - example
-  /refresh_token:
+  /user/refresh_token:
     post:
       consumes:
       - application/json
@@ -123,7 +123,7 @@ paths:
       summary: Refresh token handler
       tags:
       - example
-  /register:
+  /user/register:
     post:
       consumes:
       - application/json
