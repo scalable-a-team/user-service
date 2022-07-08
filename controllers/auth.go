@@ -9,6 +9,18 @@ import (
 	"user-service/models"
 )
 
+// @BasePath /api/auth
+
+// PingExample godoc
+// @Summary Login user
+// @Schemes
+// @Description Return JWT access and refresh pair, alongside user profile
+// @Tags example
+// @Accept json
+// @Produce json
+// @Param data body forms.UserSignIn true "Login input"
+// @Success 200 {object} forms.LoginResponse
+// @Router /login [post]
 func Login(c *gin.Context) {
 	var loginData forms.UserSignIn
 	if err := c.ShouldBind(&loginData); err != nil {
@@ -52,6 +64,16 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, loginResponse)
 }
 
+// PingExample godoc
+// @Summary Register customer
+// @Schemes
+// @Description Register buyer account
+// @Tags example
+// @Accept json
+// @Produce json
+// @Param data body forms.UserSignUp true "Signup input"
+// @Success 200 {object} forms.LoginResponse
+// @Router /register [post]
 func RegisterCustomer(c *gin.Context) {
 	var input forms.UserSignUp
 
@@ -86,6 +108,16 @@ func RegisterCustomer(c *gin.Context) {
 	c.JSON(http.StatusOK, loginResponse)
 }
 
+// PingExample godoc
+// @Summary Refresh token handler
+// @Schemes
+// @Description Return JWT access token given refresh token
+// @Tags example
+// @Accept json
+// @Produce json
+// @Param data body forms.RefreshTokenRequest true "Receive refresh token"
+// @Success 200 {string} refresh_token
+// @Router /refresh_token [post]
 func RefreshTokenHandler(c *gin.Context) {
 	var input forms.RefreshTokenRequest
 

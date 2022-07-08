@@ -1,0 +1,151 @@
+basePath: /api/auth
+definitions:
+  forms.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/forms.UserResponse'
+    type: object
+  forms.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  forms.UserGroupResponse:
+    properties:
+      name:
+        type: string
+    type: object
+  forms.UserProfileResponse:
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+    type: object
+  forms.UserResponse:
+    properties:
+      group:
+        $ref: '#/definitions/forms.UserGroupResponse'
+      id:
+        type: integer
+      profile:
+        $ref: '#/definitions/forms.UserProfileResponse'
+      username:
+        type: string
+    type: object
+  forms.UserSignIn:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  forms.UserSignUp:
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - first_name
+    - last_name
+    - password
+    - username
+    type: object
+host: localhost
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: User Service API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Return JWT access and refresh pair, alongside user profile
+      parameters:
+      - description: Login input
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/forms.UserSignIn'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.LoginResponse'
+      summary: Login user
+      tags:
+      - example
+  /refresh_token:
+    post:
+      consumes:
+      - application/json
+      description: Return JWT access token given refresh token
+      parameters:
+      - description: Receive refresh token
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/forms.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Refresh token handler
+      tags:
+      - example
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register buyer account
+      parameters:
+      - description: Signup input
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/forms.UserSignUp'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.LoginResponse'
+      summary: Register customer
+      tags:
+      - example
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

@@ -4,15 +4,34 @@ import (
 	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 	"log"
 	"net/http"
 	"os"
 	"user-service/controllers"
 	"user-service/db"
+	_ "user-service/docs"
 	"user-service/middlewares"
 	"user-service/models"
 )
 
+// @title           User Service API
+// @version         1.0
+// @description     This is a sample server celler server.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost
+// @BasePath  /api/auth
+
+// @securityDefinitions.basic  BasicAuth
 func main() {
 	port := os.Getenv("PORT")
 
@@ -26,7 +45,7 @@ func main() {
 	// the jwt middleware
 	middlewares.InitCustomerJWTMiddleware()
 	middlewares.InitSellerJWTMiddleware()
-
+	r.GET("/api/auth/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.GET("api/auth/debug", getClaims)
 
 	customerRouter := r.Group("/api/auth/customer")
