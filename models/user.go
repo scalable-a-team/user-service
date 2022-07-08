@@ -47,6 +47,17 @@ func (u *User) RetrieveByUsername(username string) error {
 	return nil
 }
 
+func (u *User) RetrieveByUsernameWithProfile(username string) error {
+	if err := db.GetDB().
+		Where("username = ?", username).
+		Preload("Profile").
+		First(u).
+		Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func (u *User) IsUsernameExist(username string) (bool, error) {
 	var userExists bool
 	userResultError := db.GetDB().

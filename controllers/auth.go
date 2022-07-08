@@ -145,3 +145,35 @@ func generateUserData(userModel models.User) forms.UserResponse {
 		},
 	}
 }
+
+// PingExample godoc
+// @Summary Get Customer Profile
+// @Schemes
+// @Description Get customer profile from Authorization JWT header
+// @Tags example
+// @Accept json
+// @Produce json
+// @Security JWT Key
+// @param Authorization header string true "Bearer YourJWTToken"
+// @Success 200 {object} forms.UserResponse
+// @Router /user/profile [get]
+func GetProfileHandler(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	tokenString := authHeader[len("Bearer"):]
+	username, err := middlewares.GetCustomerJwtMiddleware().GetUsernameFromToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	user := models.User{}
+
+	err = user.RetrieveByUsernameWithProfile(username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	loginResponse := generateUserData(user)
+	loginResponse.Group.Name = enums.Customer
+	c.JSON(http.StatusOK, loginResponse)
+}

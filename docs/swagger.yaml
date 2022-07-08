@@ -101,6 +101,29 @@ paths:
       summary: Login user
       tags:
       - example
+  /user/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get customer profile from Authorization JWT header
+      parameters:
+      - description: Bearer YourJWTToken
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.UserResponse'
+      security:
+      - JWT Key: []
+      summary: Get Customer Profile
+      tags:
+      - example
   /user/refresh_token:
     post:
       consumes:

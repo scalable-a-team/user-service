@@ -52,6 +52,43 @@
                 }
             }
         },
+        "/user/profile": {
+            "get": {
+                "security": [
+                    {
+                        "JWT Key": []
+                    }
+                ],
+                "description": "Get customer profile from Authorization JWT header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Get Customer Profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer YourJWTToken",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/forms.UserResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/refresh_token": {
             "post": {
                 "description": "Return JWT access token given refresh token",

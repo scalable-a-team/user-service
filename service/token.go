@@ -37,6 +37,28 @@ func (tg *TokenService) GenerateAccessToken(user *models.User) (string, error) {
 	return t, nil
 }
 
+func (tg *TokenService) GetUsernameFromToken(accessToken string) (string, error) {
+	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+		return tg.SecretKey, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// Get the user record from database or
+		// run through your business logic to verify if the user can log in
+		username := claims["username"].(string)
+		return username, nil
+	}
+	return "", errors.New("invalid token")
+}
+
 func (tg *TokenService) GenerateRefreshToken(user *models.User) (string, error) {
 	refreshToken := jwt.New(jwt.SigningMethodHS256)
 	rtClaims := refreshToken.Claims.(jwt.MapClaims)

@@ -52,6 +52,7 @@ func main() {
 	customerRouter.POST("/login", controllers.Login)
 	customerRouter.POST("/register", controllers.RegisterCustomer)
 	customerRouter.POST("/refresh_token", controllers.RefreshTokenHandler)
+	customerRouter.GET("/profile", controllers.GetProfileHandler)
 
 	//sellerRouter := r.Group("/api/auth/seller")
 	//sellerRouter.POST("/login", sellerAuthMiddleware.LoginHandler)
