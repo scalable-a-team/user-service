@@ -10,6 +10,7 @@ import (
 
 type TokenService struct {
 	SecretKey         []byte
+	ISS               string
 	AccessExpireTime  time.Duration
 	RefreshExpireTime time.Duration
 }
@@ -23,12 +24,14 @@ func (tg *TokenService) GenerateAccessToken(user *models.User) (string, error) {
 	// The backend can also decode the token and get admin etc.
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = user.Username
-	claims["iss"] = "login-issuer"
+	claims["iss"] = tg.ISS
 	claims["group"] = user.RoleGroupName
 	claims["exp"] = time.Now().Add(tg.AccessExpireTime).Unix()
 
 	// Generate encoded token and send it as response.
 	// The signing string should be secret (a generated UUID works too)
+	fmt.Println("generating token")
+	fmt.Println(string(tg.SecretKey))
 	t, err := token.SignedString(tg.SecretKey)
 	if err != nil {
 		return "", err
@@ -63,7 +66,7 @@ func (tg *TokenService) GenerateRefreshToken(user *models.User) (string, error) 
 	refreshToken := jwt.New(jwt.SigningMethodHS256)
 	rtClaims := refreshToken.Claims.(jwt.MapClaims)
 	rtClaims["username"] = user.Username
-	rtClaims["iss"] = "login-issuer"
+	rtClaims["iss"] = tg.ISS
 	rtClaims["group"] = user.RoleGroupName
 	rtClaims["exp"] = time.Now().Add(tg.RefreshExpireTime).Unix()
 

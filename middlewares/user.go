@@ -11,8 +11,9 @@ var sellerTokenService *service.TokenService
 
 func InitCustomerJWTMiddleware() *service.TokenService {
 	secretKey := os.Getenv("JWT_CUSTOMER_SECRET_KEY")
-
+	iss := os.Getenv("JWT_BUYER_ISS")
 	customerTokenService = &service.TokenService{
+		ISS:               iss,
 		SecretKey:         []byte(secretKey),
 		AccessExpireTime:  time.Minute * 15,
 		RefreshExpireTime: time.Hour * 5,
@@ -26,8 +27,9 @@ func GetCustomerJwtMiddleware() *service.TokenService {
 
 func InitSellerJWTMiddleware() *service.TokenService {
 	secretKey := os.Getenv("JWT_SELLER_SECRET_KEY")
-
+	iss := os.Getenv("JWT_SELLER_ISS")
 	sellerTokenService = &service.TokenService{
+		ISS:               iss,
 		SecretKey:         []byte(secretKey),
 		AccessExpireTime:  time.Minute * 15,
 		RefreshExpireTime: time.Hour * 5,
