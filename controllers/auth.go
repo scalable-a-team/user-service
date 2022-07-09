@@ -159,7 +159,7 @@ func generateUserData(userModel models.User) forms.UserResponse {
 // @Router /user/profile [get]
 func GetProfileHandler(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
-	tokenString := authHeader[len("Bearer"):]
+	tokenString := authHeader[len("Bearer "):]
 	username, err := middlewares.GetCustomerJwtMiddleware().GetUsernameFromToken(tokenString)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
