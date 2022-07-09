@@ -16,7 +16,7 @@ import (
 	"user-service/models"
 )
 
-// @title           User Service API
+// @title           Buyer Service API
 // @version         1.0
 // @description     This is a sample server celler server.
 // @termsOfService  http://swagger.io/terms/
@@ -31,12 +31,19 @@ import (
 // @host      localhost:8000
 // @BasePath  /api/user
 
-// @securityDefinitions.basic  BasicAuth
+// @securityDefinitions.apikey ApiKeyAuth  Authorization
+//@in header
+//@name Authorization
 func main() {
 	port := os.Getenv("PORT")
 
 	dbInstance := db.Init()
-	err := dbInstance.AutoMigrate(&models.RoleGroup{}, &models.User{}, &models.Profile{})
+	err := dbInstance.AutoMigrate(
+		&models.Seller{},
+		&models.SellerProfile{},
+		&models.Buyer{},
+		&models.BuyerProfile{},
+	)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -49,15 +56,16 @@ func main() {
 	r.GET("api/user/debug", getClaims)
 
 	customerRouter := r.Group("/api/user/customer")
-	customerRouter.POST("/login", controllers.Login)
+	customerRouter.POST("/login", controllers.BuyerLogin)
 	customerRouter.POST("/register", controllers.RegisterCustomer)
-	customerRouter.POST("/refresh_token", controllers.RefreshTokenHandler)
-	customerRouter.GET("/profile", controllers.GetProfileHandler)
+	customerRouter.POST("/refresh_token", controllers.BuyerRefreshTokenHandler)
+	customerRouter.GET("/profile", controllers.GetBuyerProfileHandler)
 
-	//sellerRouter := r.Group("/api/auth/seller")
-	//sellerRouter.POST("/login", sellerAuthMiddleware.LoginHandler)
-	//sellerRouter.POST("/register", controllers.RegisterCustomer)
-	//sellerRouter.GET("/refresh_token", sellerAuthMiddleware.RefreshHandler)
+	sellerRouter := r.Group("/api/user/seller")
+	sellerRouter.POST("/login", controllers.SellerLogin)
+	sellerRouter.POST("/register", controllers.SellerRegister)
+	sellerRouter.GET("/refresh_token", controllers.SellerRefreshToken)
+	sellerRouter.GET("/profile", controllers.GetSellerProfile)
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)

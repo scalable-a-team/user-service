@@ -76,16 +76,16 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: User Service API
+  title: Buyer Service API
   version: "1.0"
 paths:
-  /user/login:
+  /customer/login:
     post:
       consumes:
       - application/json
       description: Return JWT access and refresh pair, alongside user profile
       parameters:
-      - description: Login input
+      - description: BuyerLogin input
         in: body
         name: data
         required: true
@@ -98,10 +98,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/forms.LoginResponse'
-      summary: Login user
+      summary: BuyerLogin user
       tags:
       - example
-  /user/profile:
+  /customer/profile:
     get:
       consumes:
       - application/json
@@ -121,10 +121,10 @@ paths:
             $ref: '#/definitions/forms.UserResponse'
       security:
       - JWT Key: []
-      summary: Get Customer Profile
+      summary: Get Buyer BuyerProfile
       tags:
       - example
-  /user/refresh_token:
+  /customer/refresh_token:
     post:
       consumes:
       - application/json
@@ -146,7 +146,7 @@ paths:
       summary: Refresh token handler
       tags:
       - example
-  /user/register:
+  /customer/register:
     post:
       consumes:
       - application/json
@@ -168,7 +168,98 @@ paths:
       summary: Register customer
       tags:
       - example
+  /seller/login:
+    post:
+      consumes:
+      - application/json
+      description: Return JWT access and refresh pair, alongside user profile
+      parameters:
+      - description: SellerLogin input
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/forms.UserSignIn'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.LoginResponse'
+      summary: SellerLogin user
+      tags:
+      - example
+  /seller/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get seller profile from Authorization JWT header
+      parameters:
+      - description: Bearer YourJWTToken
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.UserResponse'
+      security:
+      - JWT Key: []
+      summary: Get Seller SellerProfile
+      tags:
+      - example
+  /seller/refresh_token:
+    post:
+      consumes:
+      - application/json
+      description: Return JWT access token given refresh token
+      parameters:
+      - description: Receive refresh token
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/forms.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Refresh token handler
+      tags:
+      - example
+  /seller/register:
+    post:
+      consumes:
+      - application/json
+      description: Register seller account
+      parameters:
+      - description: Signup input
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/forms.UserSignUp'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.LoginResponse'
+      summary: Register customer
+      tags:
+      - example
 securityDefinitions:
-  BasicAuth:
-    type: basic
+  ApiKeyAuth  Authorization:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

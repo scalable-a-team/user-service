@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
-	"user-service/models"
 )
 
 type TokenService struct {
@@ -15,7 +14,12 @@ type TokenService struct {
 	RefreshExpireTime time.Duration
 }
 
-func (tg *TokenService) GenerateAccessToken(user *models.User) (string, error) {
+type TokenUserInput struct {
+	Username      string
+	RoleGroupName string
+}
+
+func (tg *TokenService) GenerateAccessToken(user *TokenUserInput) (string, error) {
 	// Create token
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -62,7 +66,7 @@ func (tg *TokenService) GetUsernameFromToken(accessToken string) (string, error)
 	return "", errors.New("invalid token")
 }
 
-func (tg *TokenService) GenerateRefreshToken(user *models.User) (string, error) {
+func (tg *TokenService) GenerateRefreshToken(user *TokenUserInput) (string, error) {
 	refreshToken := jwt.New(jwt.SigningMethodHS256)
 	rtClaims := refreshToken.Claims.(jwt.MapClaims)
 	rtClaims["username"] = user.Username
@@ -78,7 +82,7 @@ func (tg *TokenService) GenerateRefreshToken(user *models.User) (string, error) 
 	return rt, nil
 }
 
-func (tg *TokenService) RefreshAccessToken(refreshToken string) (string, error) {
+func (tg *TokenService) ValidateRefreshAccessToken(refreshToken string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -89,22 +93,12 @@ func (tg *TokenService) RefreshAccessToken(refreshToken string) (string, error) 
 		return tg.SecretKey, nil
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// Get the user record from database or
 		// run through your business logic to verify if the user can log in
-		username := claims["username"].(string)
-		var user models.User
-		if err := user.RetrieveByUsername(username); err != nil {
-			return "", err
-		}
-		user.RoleGroupName = claims["group"].(string)
-		accessToken, err := tg.GenerateAccessToken(&user)
-		if err != nil {
-			return accessToken, err
-		}
-		return accessToken, nil
+		return claims, nil
 	}
-	return "", errors.New("invalid token")
+	return nil, errors.New("invalid token")
 }

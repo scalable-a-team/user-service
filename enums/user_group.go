@@ -1,6 +1,6 @@
 package enums
 
 const (
-	Customer = "customer"
-	Seller   = "seller"
+	Buyer  = "customer"
+	Seller = "seller"
 )

@@ -3,54 +3,38 @@ package models
 import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/net/html"
 	"gorm.io/gorm"
+	"html"
 	"strings"
 	"user-service/db"
-	"user-service/enums"
 	"user-service/forms"
 )
 
-type RoleGroup struct {
+type Buyer struct {
 	gorm.Model
-	Name string
-	User []User
+	Username     string
+	Password     string
+	BuyerProfile BuyerProfile `gorm:"OnDelete:CASCADE"`
 }
 
-func (ug *RoleGroup) GetGroup(groupName string) error {
-	if err := db.GetDB().Where(RoleGroup{Name: groupName}).FirstOrCreate(ug).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-type User struct {
-	gorm.Model
-	Username      string
-	Password      string
-	Profile       Profile `gorm:"OnDelete:CASCADE"`
-	RoleGroupID   uint
-	RoleGroupName string `gorm:"-"`
-}
-
-type Profile struct {
+type BuyerProfile struct {
 	gorm.Model
 	FirstName string
 	LastName  string
-	UserID    uint
+	BuyerID   uint
 }
 
-func (u *User) RetrieveByUsername(username string) error {
+func (u *Buyer) RetrieveByUsername(username string) error {
 	if err := db.GetDB().Where("username = ?", username).First(u).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *User) RetrieveByUsernameWithProfile(username string) error {
+func (u *Buyer) RetrieveByUsernameWithProfile(username string) error {
 	if err := db.GetDB().
 		Where("username = ?", username).
-		Preload("Profile").
+		Preload("BuyerProfile").
 		First(u).
 		Error; err != nil {
 		return err
@@ -58,10 +42,10 @@ func (u *User) RetrieveByUsernameWithProfile(username string) error {
 	return nil
 }
 
-func (u *User) IsUsernameExist(username string) (bool, error) {
+func (u *Buyer) IsUsernameExist(username string) (bool, error) {
 	var userExists bool
 	userResultError := db.GetDB().
-		Model(&User{}).
+		Model(&Buyer{}).
 		Select("count(*) > 0").
 		Where("username = ?", username).
 		Find(&userExists).Error
@@ -71,41 +55,35 @@ func (u *User) IsUsernameExist(username string) (bool, error) {
 	return userExists, nil
 }
 
-func (u *User) CreateCustomer(registerForm forms.UserSignUp) (*User, error) {
+func (u *Buyer) CreateAccount(registerForm forms.UserSignUp) (*Buyer, error) {
 	userExists, userResultError := u.IsUsernameExist(registerForm.Username)
 	if userResultError != nil {
-		return &User{}, userResultError
+		return &Buyer{}, userResultError
 	}
 	if userExists {
-		return &User{}, errors.New("user already exists")
+		return &Buyer{}, errors.New("user already exists")
 	}
 
-	var userGroup RoleGroup
-	if err := userGroup.GetGroup(enums.Customer); err != nil {
-		return &User{}, err
-	}
-	var profile = Profile{
+	var profile = BuyerProfile{
 		FirstName: registerForm.FirstName,
 		LastName:  registerForm.LastName,
 	}
-	var user = User{
-		Username:      registerForm.Username,
-		Password:      registerForm.Password,
-		Profile:       profile,
-		RoleGroupID:   userGroup.ID,
-		RoleGroupName: enums.Customer,
+	var user = Buyer{
+		Username:     registerForm.Username,
+		Password:     registerForm.Password,
+		BuyerProfile: profile,
 	}
 
 	if err := db.GetDB().Create(&user).Error; err != nil {
-		return &User{}, err
+		return &Buyer{}, err
 	}
 	return &user, nil
 }
 
-func (u *User) Login(form forms.UserSignIn) (bool, error) {
+func (u *Buyer) Login(form forms.UserSignIn) (bool, error) {
 	if err := db.GetDB().
 		Where("username = ?", form.Username).
-		Preload("Profile").
+		Preload("BuyerProfile").
 		First(u).Error; err != nil {
 		return false, err
 	}
@@ -117,15 +95,114 @@ func (u *User) Login(form forms.UserSignIn) (bool, error) {
 	if err := bcrypt.CompareHashAndPassword(byteHashedPassword, bytePassword); err != nil {
 		return false, err
 	}
-	var roleGroup RoleGroup
-	if err := db.GetDB().Where("id = ?", u.RoleGroupID).FirstOrCreate(&roleGroup).Error; err != nil {
-		return false, err
-	}
-	u.RoleGroupName = roleGroup.Name
 	return true, nil
 }
 
-func (u *User) BeforeCreate(tx *gorm.DB) error {
+func (u *Buyer) BeforeCreate(tx *gorm.DB) error {
+
+	//turn password into hash
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	u.Password = string(hashedPassword)
+
+	//remove spaces in username
+	u.Username = html.EscapeString(strings.TrimSpace(u.Username))
+
+	return nil
+
+}
+
+type Seller struct {
+	gorm.Model
+	Username      string
+	Password      string
+	SellerProfile SellerProfile `gorm:"OnDelete:CASCADE"`
+}
+
+type SellerProfile struct {
+	gorm.Model
+	FirstName string
+	LastName  string
+	SellerID  uint
+}
+
+func (u *Seller) RetrieveByUsername(username string) error {
+	if err := db.GetDB().Where("username = ?", username).First(u).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *Seller) RetrieveByUsernameWithProfile(username string) error {
+	if err := db.GetDB().
+		Where("username = ?", username).
+		Preload("SellerProfile").
+		First(u).
+		Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *Seller) IsUsernameExist(username string) (bool, error) {
+	var userExists bool
+	userResultError := db.GetDB().
+		Model(&Seller{}).
+		Select("count(*) > 0").
+		Where("username = ?", username).
+		Find(&userExists).Error
+	if userResultError != nil {
+		return false, userResultError
+	}
+	return userExists, nil
+}
+
+func (u *Seller) CreateAccount(registerForm forms.UserSignUp) (*Seller, error) {
+	userExists, userResultError := u.IsUsernameExist(registerForm.Username)
+	if userResultError != nil {
+		return &Seller{}, userResultError
+	}
+	if userExists {
+		return &Seller{}, errors.New("user already exists")
+	}
+
+	var profile = SellerProfile{
+		FirstName: registerForm.FirstName,
+		LastName:  registerForm.LastName,
+	}
+	var user = Seller{
+		Username:      registerForm.Username,
+		Password:      registerForm.Password,
+		SellerProfile: profile,
+	}
+
+	if err := db.GetDB().Create(&user).Error; err != nil {
+		return &Seller{}, err
+	}
+	return &user, nil
+}
+
+func (u *Seller) Login(form forms.UserSignIn) (bool, error) {
+	if err := db.GetDB().
+		Where("username = ?", form.Username).
+		Preload("SellerProfile").
+		First(u).Error; err != nil {
+		return false, err
+	}
+
+	//Compare the password form and database if match
+	bytePassword := []byte(form.Password)
+	byteHashedPassword := []byte(u.Password)
+
+	if err := bcrypt.CompareHashAndPassword(byteHashedPassword, bytePassword); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (u *Seller) BeforeCreate(tx *gorm.DB) error {
 
 	//turn password into hash
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)

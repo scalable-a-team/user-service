@@ -7,26 +7,27 @@ import (
 	"user-service/forms"
 	"user-service/middlewares"
 	"user-service/models"
+	"user-service/service"
 )
 
 // PingExample godoc
-// @Summary Login user
+// @Summary SellerLogin user
 // @Schemes
 // @Description Return JWT access and refresh pair, alongside user profile
 // @Tags example
 // @Accept json
 // @Produce json
-// @Param data body forms.UserSignIn true "Login input"
+// @Param data body forms.UserSignIn true "SellerLogin input"
 // @Success 200 {object} forms.LoginResponse
-// @Router /user/login [post]
-func Login(c *gin.Context) {
+// @Router /seller/login [post]
+func SellerLogin(c *gin.Context) {
 	var loginData forms.UserSignIn
 	if err := c.ShouldBind(&loginData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var userModel = models.User{}
+	var userModel = models.Seller{}
 	isSuccess, err := userModel.Login(loginData)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -37,18 +38,14 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if userModel.RoleGroupName != enums.Customer {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user group for this endpoint"})
-		return
-	}
-
-	tokenString, err := middlewares.GetCustomerJwtMiddleware().GenerateAccessToken(&userModel)
+	tokenUserInput := service.TokenUserInput{Username: userModel.Username, RoleGroupName: enums.Seller}
+	tokenString, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	refreshTokenString, err := middlewares.GetCustomerJwtMiddleware().GenerateRefreshToken(&userModel)
+	refreshTokenString, err := middlewares.GetSellerJwtMiddleware().GenerateRefreshToken(&tokenUserInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -57,7 +54,7 @@ func Login(c *gin.Context) {
 	var loginResponse = forms.LoginResponse{
 		Token:   tokenString,
 		Refresh: refreshTokenString,
-		User:    generateUserData(userModel),
+		User:    generateSellerData(userModel),
 	}
 	c.JSON(http.StatusOK, loginResponse)
 }
@@ -65,34 +62,35 @@ func Login(c *gin.Context) {
 // PingExample godoc
 // @Summary Register customer
 // @Schemes
-// @Description Register buyer account
+// @Description Register seller account
 // @Tags example
 // @Accept json
 // @Produce json
 // @Param data body forms.UserSignUp true "Signup input"
 // @Success 200 {object} forms.LoginResponse
-// @Router /user/register [post]
-func RegisterCustomer(c *gin.Context) {
+// @Router /seller/register [post]
+func SellerRegister(c *gin.Context) {
 	var input forms.UserSignUp
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var userModel = new(models.User)
-	newUser, err := userModel.CreateCustomer(input)
+	var userModel = new(models.Seller)
+	newUser, err := userModel.CreateAccount(input)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tokenUserInput := service.TokenUserInput{Username: userModel.Username, RoleGroupName: enums.Seller}
+
+	tokenString, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	tokenString, err := middlewares.GetCustomerJwtMiddleware().GenerateAccessToken(newUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	refreshTokenString, err := middlewares.GetCustomerJwtMiddleware().GenerateRefreshToken(newUser)
+	refreshTokenString, err := middlewares.GetSellerJwtMiddleware().GenerateRefreshToken(&tokenUserInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -101,7 +99,7 @@ func RegisterCustomer(c *gin.Context) {
 	var loginResponse = forms.LoginResponse{
 		Token:   tokenString,
 		Refresh: refreshTokenString,
-		User:    generateUserData(*newUser),
+		User:    generateSellerData(*newUser),
 	}
 	c.JSON(http.StatusOK, loginResponse)
 }
@@ -115,57 +113,65 @@ func RegisterCustomer(c *gin.Context) {
 // @Produce json
 // @Param data body forms.RefreshTokenRequest true "Receive refresh token"
 // @Success 200 {string} refresh_token
-// @Router /user/refresh_token [post]
-func RefreshTokenHandler(c *gin.Context) {
+// @Router /seller/refresh_token [post]
+func SellerRefreshToken(c *gin.Context) {
 	var input forms.RefreshTokenRequest
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	token, err := middlewares.GetCustomerJwtMiddleware().RefreshAccessToken(input.RefreshToken)
+	claims, err := middlewares.GetSellerJwtMiddleware().ValidateRefreshAccessToken(input.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"access_token": token})
+	username := claims["username"].(string)
+	var user models.Seller
+	if err := user.RetrieveByUsername(username); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	accessToken, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(
+		&service.TokenUserInput{Username: username, RoleGroupName: enums.Seller},
+	)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
 }
 
-func generateUserData(userModel models.User) forms.UserResponse {
+func generateSellerData(userModel models.Seller) forms.UserResponse {
 	return forms.UserResponse{
 		ID:       userModel.ID,
 		Username: userModel.Username,
 		Profile: forms.UserProfileResponse{
-			FirstName: userModel.Profile.FirstName,
-			LastName:  userModel.Profile.LastName,
+			FirstName: userModel.SellerProfile.FirstName,
+			LastName:  userModel.SellerProfile.LastName,
 		},
 		Group: forms.UserGroupResponse{
-			Name: userModel.RoleGroupName,
+			Name: enums.Seller,
 		},
 	}
 }
 
 // PingExample godoc
-// @Summary Get Customer Profile
+// @Summary Get Seller SellerProfile
 // @Schemes
-// @Description Get customer profile from Authorization JWT header
+// @Description Get seller profile from Authorization JWT header
 // @Tags example
 // @Accept json
 // @Produce json
 // @Security JWT Key
 // @param Authorization header string true "Bearer YourJWTToken"
 // @Success 200 {object} forms.UserResponse
-// @Router /user/profile [get]
-func GetProfileHandler(c *gin.Context) {
+// @Router /seller/profile [get]
+func GetSellerProfile(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	tokenString := authHeader[len("Bearer "):]
-	username, err := middlewares.GetCustomerJwtMiddleware().GetUsernameFromToken(tokenString)
+	username, err := middlewares.GetSellerJwtMiddleware().GetUsernameFromToken(tokenString)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user := models.User{}
+	user := models.Seller{}
 
 	err = user.RetrieveByUsernameWithProfile(username)
 	if err != nil {
@@ -173,7 +179,7 @@ func GetProfileHandler(c *gin.Context) {
 		return
 	}
 
-	loginResponse := generateUserData(user)
-	loginResponse.Group.Name = enums.Customer
+	loginResponse := generateSellerData(user)
+	loginResponse.Group.Name = enums.Seller
 	c.JSON(http.StatusOK, loginResponse)
 }

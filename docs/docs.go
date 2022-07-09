@@ -25,7 +25,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/user/login": {
+        "/customer/login": {
             "post": {
                 "description": "Return JWT access and refresh pair, alongside user profile",
                 "consumes": [
@@ -37,10 +37,10 @@ const docTemplate = `{
                 "tags": [
                     "example"
                 ],
-                "summary": "Login user",
+                "summary": "BuyerLogin user",
                 "parameters": [
                     {
-                        "description": "Login input",
+                        "description": "BuyerLogin input",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -59,7 +59,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/profile": {
+        "/customer/profile": {
             "get": {
                 "security": [
                     {
@@ -76,7 +76,7 @@ const docTemplate = `{
                 "tags": [
                     "example"
                 ],
-                "summary": "Get Customer Profile",
+                "summary": "Get Buyer BuyerProfile",
                 "parameters": [
                     {
                         "type": "string",
@@ -96,7 +96,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/refresh_token": {
+        "/customer/refresh_token": {
             "post": {
                 "description": "Return JWT access token given refresh token",
                 "consumes": [
@@ -130,9 +130,148 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/register": {
+        "/customer/register": {
             "post": {
                 "description": "Register buyer account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Register customer",
+                "parameters": [
+                    {
+                        "description": "Signup input",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/forms.UserSignUp"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/forms.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/login": {
+            "post": {
+                "description": "Return JWT access and refresh pair, alongside user profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "SellerLogin user",
+                "parameters": [
+                    {
+                        "description": "SellerLogin input",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/forms.UserSignIn"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/forms.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/profile": {
+            "get": {
+                "security": [
+                    {
+                        "JWT Key": []
+                    }
+                ],
+                "description": "Get seller profile from Authorization JWT header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Get Seller SellerProfile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer YourJWTToken",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/forms.UserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/refresh_token": {
+            "post": {
+                "description": "Return JWT access token given refresh token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Refresh token handler",
+                "parameters": [
+                    {
+                        "description": "Receive refresh token",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/forms.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/register": {
+            "post": {
+                "description": "Register seller account",
                 "consumes": [
                     "application/json"
                 ],
@@ -267,8 +406,10 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
+        "ApiKeyAuth  Authorization": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
@@ -279,7 +420,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8000",
 	BasePath:         "/api/user",
 	Schemes:          []string{},
-	Title:            "User Service API",
+	Title:            "Buyer Service API",
 	Description:      "This is a sample server celler server.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
