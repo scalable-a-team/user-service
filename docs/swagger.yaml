@@ -1,5 +1,17 @@
 basePath: /api/user
 definitions:
+  forms.AddWalletBalanceInput:
+    properties:
+      add_balance:
+        type: integer
+    required:
+    - add_balance
+    type: object
+  forms.AddWalletBalanceResponse:
+    properties:
+      new_balance:
+        type: integer
+    type: object
   forms.LoginResponse:
     properties:
       access_token:
@@ -81,6 +93,35 @@ info:
   title: Buyer Service API
   version: "1.0"
 paths:
+  /customer/increase_balance:
+    post:
+      consumes:
+      - application/json
+      description: Increase custom wallet balance
+      parameters:
+      - description: Bearer YourJWTToken
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Increment balance by certain amount
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/forms.AddWalletBalanceInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.AddWalletBalanceResponse'
+      security:
+      - JWT Key: []
+      summary: Topup customer wallet balance to purchase stuff
+      tags:
+      - example
   /customer/login:
     post:
       consumes:

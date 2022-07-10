@@ -186,3 +186,47 @@ func generateBuyerData(userModel models.Buyer) forms.UserResponse {
 		WalletBalance: userModel.BuyerWallet.Balance,
 	}
 }
+
+// PingExample godoc
+// @Summary Topup customer wallet balance to purchase stuff
+// @Schemes
+// @Description Increase custom wallet balance
+// @Tags example
+// @Accept json
+// @Produce json
+// @Security JWT Key
+// @param Authorization header string true "Bearer YourJWTToken"
+// @Param data body forms.AddWalletBalanceInput true "Increment balance by certain amount"
+// @Success 200 {object} forms.AddWalletBalanceResponse
+// @Router /customer/increase_balance [post]
+func AddBuyerWalletBalance(c *gin.Context) {
+	var input forms.AddWalletBalanceInput
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	authHeader := c.GetHeader("Authorization")
+	tokenString := authHeader[len("Bearer "):]
+
+	username, err := middlewares.GetCustomerJwtMiddleware().GetUsernameFromToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	user := models.Buyer{}
+
+	err = user.RetrieveByUsernameWithProfile(username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedBalance, err := user.AddBalance(input)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, forms.AddWalletBalanceResponse{NewBalance: updatedBalance})
+}

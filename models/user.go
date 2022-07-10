@@ -4,6 +4,7 @@ import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"html"
 	"strings"
 	"user-service/db"
@@ -123,7 +124,33 @@ func (u *Buyer) BeforeCreate(tx *gorm.DB) error {
 	u.Username = html.EscapeString(strings.TrimSpace(u.Username))
 
 	return nil
+}
 
+func (u *Buyer) AddBalance(input forms.AddWalletBalanceInput) (uint, error) {
+	updatedBalance := u.BuyerWallet.Balance
+	err := db.GetDB().Transaction(func(tx *gorm.DB) error {
+		tmpWallet := BuyerWallet{}
+		// do some database operations in the transaction (use 'tx' from this point, not 'db')
+		if err := tx.
+			Model(&tmpWallet).
+			Where("ID = ?", u.BuyerWallet.ID).
+			Clauses(clause.Locking{Strength: "UPDATE"}).Find(&tmpWallet).Error; err != nil {
+			return err
+		}
+		updatedBalance = tmpWallet.Balance + input.AddBalance
+		if err := tx.
+			Model(&tmpWallet).
+			Where("ID = ?", u.BuyerWallet.ID).
+			Update("Balance", updatedBalance).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+	return updatedBalance, nil
 }
 
 type Seller struct {

@@ -62,6 +62,7 @@ func main() {
 	customerRouter.POST("/register", controllers.RegisterCustomer)
 	customerRouter.POST("/refresh_token", controllers.BuyerRefreshTokenHandler)
 	customerRouter.GET("/profile", controllers.GetBuyerProfileHandler)
+	customerRouter.POST("/increase_balance", controllers.AddBuyerWalletBalance)
 
 	sellerRouter := r.Group("/api/user/seller")
 	sellerRouter.POST("/login", controllers.SellerLogin)

@@ -16,6 +16,14 @@ type RefreshTokenRequest struct {
 	RefreshToken string `form:"refresh_token" json:"refresh_token" binding:"required"`
 }
 
+type AddWalletBalanceInput struct {
+	AddBalance uint `json:"add_balance" binding:"required"`
+}
+
+type AddWalletBalanceResponse struct {
+	NewBalance uint `json:"new_balance"`
+}
+
 type UserProfileResponse struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`

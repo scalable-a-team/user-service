@@ -25,6 +25,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/customer/increase_balance": {
+            "post": {
+                "security": [
+                    {
+                        "JWT Key": []
+                    }
+                ],
+                "description": "Increase custom wallet balance",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Topup customer wallet balance to purchase stuff",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer YourJWTToken",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Increment balance by certain amount",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/forms.AddWalletBalanceInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/forms.AddWalletBalanceResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/customer/login": {
             "post": {
                 "description": "Return JWT access and refresh pair, alongside user profile",
@@ -305,6 +351,25 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "forms.AddWalletBalanceInput": {
+            "type": "object",
+            "required": [
+                "add_balance"
+            ],
+            "properties": {
+                "add_balance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "forms.AddWalletBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "new_balance": {
+                    "type": "integer"
+                }
+            }
+        },
         "forms.LoginResponse": {
             "type": "object",
             "properties": {
