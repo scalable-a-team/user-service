@@ -363,6 +363,9 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                },
+                "wallet_balance": {
+                    "type": "integer"
                 }
             }
         },

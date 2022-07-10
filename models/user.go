@@ -15,6 +15,7 @@ type Buyer struct {
 	Username     string
 	Password     string
 	BuyerProfile BuyerProfile `gorm:"OnDelete:CASCADE"`
+	BuyerWallet  BuyerWallet
 }
 
 type BuyerProfile struct {
@@ -22,6 +23,12 @@ type BuyerProfile struct {
 	FirstName string
 	LastName  string
 	BuyerID   uint
+}
+
+type BuyerWallet struct {
+	gorm.Model
+	Balance uint
+	BuyerID uint
 }
 
 func (u *Buyer) RetrieveByUsername(username string) error {
@@ -35,6 +42,7 @@ func (u *Buyer) RetrieveByUsernameWithProfile(username string) error {
 	if err := db.GetDB().
 		Where("username = ?", username).
 		Preload("BuyerProfile").
+		Preload("BuyerWallet").
 		First(u).
 		Error; err != nil {
 		return err
@@ -72,6 +80,9 @@ func (u *Buyer) CreateAccount(registerForm forms.UserSignUp) (*Buyer, error) {
 		Username:     registerForm.Username,
 		Password:     registerForm.Password,
 		BuyerProfile: profile,
+		BuyerWallet: BuyerWallet{
+			Balance: 0,
+		},
 	}
 
 	if err := db.GetDB().Create(&user).Error; err != nil {
@@ -84,6 +95,7 @@ func (u *Buyer) Login(form forms.UserSignIn) (bool, error) {
 	if err := db.GetDB().
 		Where("username = ?", form.Username).
 		Preload("BuyerProfile").
+		Preload("BuyerWallet").
 		First(u).Error; err != nil {
 		return false, err
 	}
@@ -119,6 +131,13 @@ type Seller struct {
 	Username      string
 	Password      string
 	SellerProfile SellerProfile `gorm:"OnDelete:CASCADE"`
+	SellerWallet  SellerWallet
+}
+
+type SellerWallet struct {
+	gorm.Model
+	Balance  uint
+	SellerID uint
 }
 
 type SellerProfile struct {
@@ -139,6 +158,7 @@ func (u *Seller) RetrieveByUsernameWithProfile(username string) error {
 	if err := db.GetDB().
 		Where("username = ?", username).
 		Preload("SellerProfile").
+		Preload("SellerWallet").
 		First(u).
 		Error; err != nil {
 		return err
@@ -176,6 +196,9 @@ func (u *Seller) CreateAccount(registerForm forms.UserSignUp) (*Seller, error) {
 		Username:      registerForm.Username,
 		Password:      registerForm.Password,
 		SellerProfile: profile,
+		SellerWallet: SellerWallet{
+			Balance: 0,
+		},
 	}
 
 	if err := db.GetDB().Create(&user).Error; err != nil {
@@ -188,6 +211,7 @@ func (u *Seller) Login(form forms.UserSignIn) (bool, error) {
 	if err := db.GetDB().
 		Where("username = ?", form.Username).
 		Preload("SellerProfile").
+		Preload("SellerWallet").
 		First(u).Error; err != nil {
 		return false, err
 	}

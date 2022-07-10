@@ -138,20 +138,6 @@ func SellerRefreshToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
 }
 
-func generateSellerData(userModel models.Seller) forms.UserResponse {
-	return forms.UserResponse{
-		ID:       userModel.ID,
-		Username: userModel.Username,
-		Profile: forms.UserProfileResponse{
-			FirstName: userModel.SellerProfile.FirstName,
-			LastName:  userModel.SellerProfile.LastName,
-		},
-		Group: forms.UserGroupResponse{
-			Name: enums.Seller,
-		},
-	}
-}
-
 // PingExample godoc
 // @Summary Get Seller SellerProfile
 // @Schemes
@@ -180,6 +166,20 @@ func GetSellerProfile(c *gin.Context) {
 	}
 
 	loginResponse := generateSellerData(user)
-	loginResponse.Group.Name = enums.Seller
 	c.JSON(http.StatusOK, loginResponse)
+}
+
+func generateSellerData(userModel models.Seller) forms.UserResponse {
+	return forms.UserResponse{
+		ID:       userModel.ID,
+		Username: userModel.Username,
+		Profile: forms.UserProfileResponse{
+			FirstName: userModel.SellerProfile.FirstName,
+			LastName:  userModel.SellerProfile.LastName,
+		},
+		Group: forms.UserGroupResponse{
+			Name: enums.Seller,
+		},
+		WalletBalance: userModel.SellerWallet.Balance,
+	}
 }

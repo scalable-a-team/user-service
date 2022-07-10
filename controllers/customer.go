@@ -141,20 +141,6 @@ func BuyerRefreshTokenHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
 }
 
-func generateBuyerData(userModel models.Buyer) forms.UserResponse {
-	return forms.UserResponse{
-		ID:       userModel.ID,
-		Username: userModel.Username,
-		Profile: forms.UserProfileResponse{
-			FirstName: userModel.BuyerProfile.FirstName,
-			LastName:  userModel.BuyerProfile.LastName,
-		},
-		Group: forms.UserGroupResponse{
-			Name: enums.Buyer,
-		},
-	}
-}
-
 // PingExample godoc
 // @Summary Get Buyer BuyerProfile
 // @Schemes
@@ -183,6 +169,20 @@ func GetBuyerProfileHandler(c *gin.Context) {
 	}
 
 	loginResponse := generateBuyerData(user)
-	loginResponse.Group.Name = enums.Buyer
 	c.JSON(http.StatusOK, loginResponse)
+}
+
+func generateBuyerData(userModel models.Buyer) forms.UserResponse {
+	return forms.UserResponse{
+		ID:       userModel.ID,
+		Username: userModel.Username,
+		Profile: forms.UserProfileResponse{
+			FirstName: userModel.BuyerProfile.FirstName,
+			LastName:  userModel.BuyerProfile.LastName,
+		},
+		Group: forms.UserGroupResponse{
+			Name: enums.Buyer,
+		},
+		WalletBalance: userModel.BuyerWallet.Balance,
+	}
 }

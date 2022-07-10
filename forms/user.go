@@ -26,10 +26,11 @@ type UserGroupResponse struct {
 }
 
 type UserResponse struct {
-	ID       uint                `json:"id"`
-	Username string              `json:"username"`
-	Profile  UserProfileResponse `json:"profile"`
-	Group    UserGroupResponse   `json:"group"`
+	ID            uint                `json:"id"`
+	Username      string              `json:"username"`
+	Profile       UserProfileResponse `json:"profile"`
+	Group         UserGroupResponse   `json:"group"`
+	WalletBalance uint                `json:"wallet_balance"`
 }
 
 type LoginResponse struct {

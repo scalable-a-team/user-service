@@ -38,6 +38,8 @@ definitions:
         $ref: '#/definitions/forms.UserProfileResponse'
       username:
         type: string
+      wallet_balance:
+        type: integer
     type: object
   forms.UserSignIn:
     properties:

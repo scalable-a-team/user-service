@@ -41,8 +41,10 @@ func main() {
 	err := dbInstance.AutoMigrate(
 		&models.Seller{},
 		&models.SellerProfile{},
+		&models.SellerWallet{},
 		&models.Buyer{},
 		&models.BuyerProfile{},
+		&models.BuyerWallet{},
 	)
 	if err != nil {
 		fmt.Println(err)
