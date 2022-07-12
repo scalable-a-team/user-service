@@ -29,7 +29,7 @@ func (tg *TokenService) GenerateAccessToken(user *TokenUserInput) (string, error
 	// The backend can also decode the token and get admin etc.
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = user.Username
-	claims["user_id"] = user.UserID
+	claims["userid"] = user.UserID
 	claims["iss"] = tg.ISS
 	claims["group"] = user.RoleGroupName
 	claims["exp"] = time.Now().Add(tg.AccessExpireTime).Unix()
@@ -72,7 +72,7 @@ func (tg *TokenService) GenerateRefreshToken(user *TokenUserInput) (string, erro
 	refreshToken := jwt.New(jwt.SigningMethodHS256)
 	rtClaims := refreshToken.Claims.(jwt.MapClaims)
 	rtClaims["username"] = user.Username
-	rtClaims["user_id"] = user.UserID
+	rtClaims["userid"] = user.UserID
 	rtClaims["iss"] = tg.ISS
 	rtClaims["group"] = user.RoleGroupName
 	rtClaims["exp"] = time.Now().Add(tg.RefreshExpireTime).Unix()
