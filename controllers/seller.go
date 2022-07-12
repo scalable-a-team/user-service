@@ -82,7 +82,7 @@ func SellerRegister(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tokenUserInput := service.TokenUserInput{Username: userModel.Username, RoleGroupName: enums.Seller}
+	tokenUserInput := service.TokenUserInput{Username: newUser.Username, RoleGroupName: enums.Seller}
 
 	tokenString, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {

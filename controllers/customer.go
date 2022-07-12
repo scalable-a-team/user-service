@@ -82,7 +82,7 @@ func RegisterCustomer(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tokenUserInput := service.TokenUserInput{Username: userModel.Username, RoleGroupName: enums.Buyer}
+	tokenUserInput := service.TokenUserInput{Username: newUser.Username, RoleGroupName: enums.Buyer}
 	tokenString, err := middlewares.GetCustomerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
