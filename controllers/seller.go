@@ -38,7 +38,11 @@ func SellerLogin(c *gin.Context) {
 		return
 	}
 
-	tokenUserInput := service.TokenUserInput{Username: userModel.Username, RoleGroupName: enums.Seller}
+	tokenUserInput := service.TokenUserInput{
+		Username:      userModel.Username,
+		UserID:        userModel.ID,
+		RoleGroupName: enums.Seller,
+	}
 	tokenString, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -82,7 +86,11 @@ func SellerRegister(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tokenUserInput := service.TokenUserInput{Username: newUser.Username, RoleGroupName: enums.Seller}
+	tokenUserInput := service.TokenUserInput{
+		Username:      newUser.Username,
+		UserID:        newUser.ID,
+		RoleGroupName: enums.Seller,
+	}
 
 	tokenString, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
@@ -122,6 +130,7 @@ func SellerRefreshToken(c *gin.Context) {
 		return
 	}
 	username := claims["username"].(string)
+	userId := claims["user_id"].(uint)
 	var user models.Seller
 	if err := user.RetrieveByUsername(username); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -129,7 +138,11 @@ func SellerRefreshToken(c *gin.Context) {
 	}
 
 	accessToken, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(
-		&service.TokenUserInput{Username: username, RoleGroupName: enums.Seller},
+		&service.TokenUserInput{
+			Username:      username,
+			UserID:        userId,
+			RoleGroupName: enums.Seller,
+		},
 	)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
