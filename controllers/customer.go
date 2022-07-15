@@ -28,7 +28,7 @@ func BuyerLogin(c *gin.Context) {
 	}
 
 	var userModel = models.Buyer{}
-	isSuccess, err := userModel.Login(loginData)
+	isSuccess, err := userModel.Login(c.Request.Context(), loginData)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -81,7 +81,7 @@ func RegisterCustomer(c *gin.Context) {
 		return
 	}
 	var userModel = new(models.Buyer)
-	newUser, err := userModel.CreateAccount(input)
+	newUser, err := userModel.CreateAccount(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -136,7 +136,7 @@ func BuyerRefreshTokenHandler(c *gin.Context) {
 	}
 	username := claims["username"].(string)
 	var user models.Buyer
-	if err := user.RetrieveByUsername(username); err != nil {
+	if err := user.RetrieveByUsername(c.Request.Context(), username); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -174,7 +174,7 @@ func GetBuyerProfileHandler(c *gin.Context) {
 	}
 	user := models.Buyer{}
 
-	err = user.RetrieveByUsernameWithProfile(username)
+	err = user.RetrieveByUsernameWithProfile(c.Request.Context(), username)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -228,13 +228,13 @@ func AddBuyerWalletBalance(c *gin.Context) {
 	}
 	user := models.Buyer{}
 
-	err = user.RetrieveByUsernameWithProfile(username)
+	err = user.RetrieveByUsernameWithProfile(c.Request.Context(), username)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	updatedBalance, err := user.AddBalance(input)
+	updatedBalance, err := user.AddBalance(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

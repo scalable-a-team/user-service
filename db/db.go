@@ -1,7 +1,9 @@
 package db
 
 import (
+	"context"
 	"fmt"
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
@@ -29,12 +31,13 @@ func Init() *gorm.DB {
 		DSN:                  dsn,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 	}), &gorm.Config{})
+	db.Use(otelgorm.NewPlugin())
 	if err != nil {
 		panic("failed to connect database")
 	}
 	return db
 }
 
-func GetDB() *gorm.DB {
-	return db
+func GetDB(c context.Context) *gorm.DB {
+	return db.WithContext(c)
 }

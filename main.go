@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +16,7 @@ import (
 	_ "user-service/docs"
 	"user-service/middlewares"
 	"user-service/models"
+	"user-service/otl"
 )
 
 // @title           Buyer Service API
@@ -35,6 +38,8 @@ import (
 //@in header
 //@name Authorization
 func main() {
+	cleanUp := otl.InitTracer()
+	defer cleanUp(context.Background())
 	port := os.Getenv("PORT")
 
 	dbInstance := db.Init()
@@ -50,7 +55,7 @@ func main() {
 		fmt.Println(err)
 	}
 	r := gin.Default()
-
+	r.Use(otelgin.Middleware("UserService"))
 	// the jwt middleware
 	middlewares.InitCustomerJWTMiddleware()
 	middlewares.InitSellerJWTMiddleware()

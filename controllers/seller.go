@@ -28,7 +28,7 @@ func SellerLogin(c *gin.Context) {
 	}
 
 	var userModel = models.Seller{}
-	isSuccess, err := userModel.Login(loginData)
+	isSuccess, err := userModel.Login(c.Request.Context(), loginData)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -81,7 +81,7 @@ func SellerRegister(c *gin.Context) {
 		return
 	}
 	var userModel = new(models.Seller)
-	newUser, err := userModel.CreateAccount(input)
+	newUser, err := userModel.CreateAccount(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -132,7 +132,7 @@ func SellerRefreshToken(c *gin.Context) {
 	username := claims["username"].(string)
 	userId := claims["user_id"].(uint)
 	var user models.Seller
-	if err := user.RetrieveByUsername(username); err != nil {
+	if err := user.RetrieveByUsername(c.Request.Context(), username); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -172,7 +172,7 @@ func GetSellerProfile(c *gin.Context) {
 	}
 	user := models.Seller{}
 
-	err = user.RetrieveByUsernameWithProfile(username)
+	err = user.RetrieveByUsernameWithProfile(c.Request.Context(), username)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

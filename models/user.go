@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -32,15 +33,15 @@ type BuyerWallet struct {
 	BuyerID uint
 }
 
-func (u *Buyer) RetrieveByUsername(username string) error {
-	if err := db.GetDB().Where("username = ?", username).First(u).Error; err != nil {
+func (u *Buyer) RetrieveByUsername(c context.Context, username string) error {
+	if err := db.GetDB(c).Where("username = ?", username).First(u).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *Buyer) RetrieveByUsernameWithProfile(username string) error {
-	if err := db.GetDB().
+func (u *Buyer) RetrieveByUsernameWithProfile(c context.Context, username string) error {
+	if err := db.GetDB(c).
 		Where("username = ?", username).
 		Preload("BuyerProfile").
 		Preload("BuyerWallet").
@@ -51,9 +52,9 @@ func (u *Buyer) RetrieveByUsernameWithProfile(username string) error {
 	return nil
 }
 
-func (u *Buyer) IsUsernameExist(username string) (bool, error) {
+func (u *Buyer) IsUsernameExist(c context.Context, username string) (bool, error) {
 	var userExists bool
-	userResultError := db.GetDB().
+	userResultError := db.GetDB(c).
 		Model(&Buyer{}).
 		Select("count(*) > 0").
 		Where("username = ?", username).
@@ -64,8 +65,8 @@ func (u *Buyer) IsUsernameExist(username string) (bool, error) {
 	return userExists, nil
 }
 
-func (u *Buyer) CreateAccount(registerForm forms.UserSignUp) (*Buyer, error) {
-	userExists, userResultError := u.IsUsernameExist(registerForm.Username)
+func (u *Buyer) CreateAccount(c context.Context, registerForm forms.UserSignUp) (*Buyer, error) {
+	userExists, userResultError := u.IsUsernameExist(c, registerForm.Username)
 	if userResultError != nil {
 		return &Buyer{}, userResultError
 	}
@@ -86,14 +87,14 @@ func (u *Buyer) CreateAccount(registerForm forms.UserSignUp) (*Buyer, error) {
 		},
 	}
 
-	if err := db.GetDB().Create(&user).Error; err != nil {
+	if err := db.GetDB(c).Create(&user).Error; err != nil {
 		return &Buyer{}, err
 	}
 	return &user, nil
 }
 
-func (u *Buyer) Login(form forms.UserSignIn) (bool, error) {
-	if err := db.GetDB().
+func (u *Buyer) Login(c context.Context, form forms.UserSignIn) (bool, error) {
+	if err := db.GetDB(c).
 		Where("username = ?", form.Username).
 		Preload("BuyerProfile").
 		Preload("BuyerWallet").
@@ -126,9 +127,9 @@ func (u *Buyer) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-func (u *Buyer) AddBalance(input forms.AddWalletBalanceInput) (uint, error) {
+func (u *Buyer) AddBalance(c context.Context, input forms.AddWalletBalanceInput) (uint, error) {
 	updatedBalance := u.BuyerWallet.Balance
-	err := db.GetDB().Transaction(func(tx *gorm.DB) error {
+	err := db.GetDB(c).Transaction(func(tx *gorm.DB) error {
 		tmpWallet := BuyerWallet{}
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.
@@ -174,15 +175,15 @@ type SellerProfile struct {
 	SellerID  uint
 }
 
-func (u *Seller) RetrieveByUsername(username string) error {
-	if err := db.GetDB().Where("username = ?", username).First(u).Error; err != nil {
+func (u *Seller) RetrieveByUsername(c context.Context, username string) error {
+	if err := db.GetDB(c).Where("username = ?", username).First(u).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *Seller) RetrieveByUsernameWithProfile(username string) error {
-	if err := db.GetDB().
+func (u *Seller) RetrieveByUsernameWithProfile(c context.Context, username string) error {
+	if err := db.GetDB(c).
 		Where("username = ?", username).
 		Preload("SellerProfile").
 		Preload("SellerWallet").
@@ -193,9 +194,9 @@ func (u *Seller) RetrieveByUsernameWithProfile(username string) error {
 	return nil
 }
 
-func (u *Seller) IsUsernameExist(username string) (bool, error) {
+func (u *Seller) IsUsernameExist(c context.Context, username string) (bool, error) {
 	var userExists bool
-	userResultError := db.GetDB().
+	userResultError := db.GetDB(c).
 		Model(&Seller{}).
 		Select("count(*) > 0").
 		Where("username = ?", username).
@@ -206,8 +207,8 @@ func (u *Seller) IsUsernameExist(username string) (bool, error) {
 	return userExists, nil
 }
 
-func (u *Seller) CreateAccount(registerForm forms.UserSignUp) (*Seller, error) {
-	userExists, userResultError := u.IsUsernameExist(registerForm.Username)
+func (u *Seller) CreateAccount(c context.Context, registerForm forms.UserSignUp) (*Seller, error) {
+	userExists, userResultError := u.IsUsernameExist(c, registerForm.Username)
 	if userResultError != nil {
 		return &Seller{}, userResultError
 	}
@@ -228,14 +229,14 @@ func (u *Seller) CreateAccount(registerForm forms.UserSignUp) (*Seller, error) {
 		},
 	}
 
-	if err := db.GetDB().Create(&user).Error; err != nil {
+	if err := db.GetDB(c).Create(&user).Error; err != nil {
 		return &Seller{}, err
 	}
 	return &user, nil
 }
 
-func (u *Seller) Login(form forms.UserSignIn) (bool, error) {
-	if err := db.GetDB().
+func (u *Seller) Login(c context.Context, form forms.UserSignIn) (bool, error) {
+	if err := db.GetDB(c).
 		Where("username = ?", form.Username).
 		Preload("SellerProfile").
 		Preload("SellerWallet").
