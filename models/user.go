@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -33,8 +34,8 @@ type BuyerProfile struct {
 
 type BuyerWallet struct {
 	gorm.Model
-	Balance uint
-	BuyerID uuid.UUID `gorm:"type:uuid"`
+	Balance decimal.Decimal `gorm:"type:decimal(12,2);"`
+	BuyerID uuid.UUID       `gorm:"type:uuid"`
 }
 
 func (u *Buyer) RetrieveByUsername(c context.Context, username string) error {
@@ -87,7 +88,7 @@ func (u *Buyer) CreateAccount(c context.Context, registerForm forms.UserSignUp) 
 		Password:     registerForm.Password,
 		BuyerProfile: profile,
 		BuyerWallet: BuyerWallet{
-			Balance: 0,
+			Balance: decimal.NewFromInt(0),
 		},
 	}
 
@@ -131,7 +132,7 @@ func (u *Buyer) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-func (u *Buyer) AddBalance(c context.Context, input forms.AddWalletBalanceInput) (uint, error) {
+func (u *Buyer) AddBalance(c context.Context, input forms.AddWalletBalanceInput) (decimal.Decimal, error) {
 	updatedBalance := u.BuyerWallet.Balance
 	err := db.GetDB(c).Transaction(func(tx *gorm.DB) error {
 		tmpWallet := BuyerWallet{}
@@ -142,7 +143,7 @@ func (u *Buyer) AddBalance(c context.Context, input forms.AddWalletBalanceInput)
 			Clauses(clause.Locking{Strength: "UPDATE"}).Find(&tmpWallet).Error; err != nil {
 			return err
 		}
-		updatedBalance = tmpWallet.Balance + input.AddBalance
+		updatedBalance = tmpWallet.Balance.Add(input.AddBalance)
 		if err := tx.
 			Model(&tmpWallet).
 			Where("ID = ?", u.BuyerWallet.ID).
@@ -153,7 +154,7 @@ func (u *Buyer) AddBalance(c context.Context, input forms.AddWalletBalanceInput)
 	})
 
 	if err != nil {
-		return 0, err
+		return decimal.NewFromInt(0), err
 	}
 	return updatedBalance, nil
 }
@@ -170,8 +171,8 @@ type Seller struct {
 
 type SellerWallet struct {
 	gorm.Model
-	Balance  uint
-	SellerID uuid.UUID `gorm:"type:uuid"`
+	Balance  decimal.Decimal `gorm:"type:decimal(12,2);"`
+	SellerID uuid.UUID       `gorm:"type:uuid"`
 }
 
 type SellerProfile struct {
@@ -231,7 +232,7 @@ func (u *Seller) CreateAccount(c context.Context, registerForm forms.UserSignUp)
 		Password:      registerForm.Password,
 		SellerProfile: profile,
 		SellerWallet: SellerWallet{
-			Balance: 0,
+			Balance: decimal.NewFromInt(0),
 		},
 	}
 

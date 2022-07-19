@@ -1,6 +1,9 @@
 package forms
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
+)
 
 type UserSignUp struct {
 	Username  string `form:"username" json:"username" binding:"required"`
@@ -19,11 +22,11 @@ type RefreshTokenRequest struct {
 }
 
 type AddWalletBalanceInput struct {
-	AddBalance uint `json:"add_balance" binding:"required"`
+	AddBalance decimal.Decimal `json:"add_balance" binding:"required"`
 }
 
 type AddWalletBalanceResponse struct {
-	NewBalance uint `json:"new_balance"`
+	NewBalance decimal.Decimal `json:"new_balance"`
 }
 
 type UserProfileResponse struct {
@@ -40,7 +43,7 @@ type UserResponse struct {
 	Username      string              `json:"username"`
 	Profile       UserProfileResponse `json:"profile"`
 	Group         UserGroupResponse   `json:"group"`
-	WalletBalance uint                `json:"wallet_balance"`
+	WalletBalance decimal.Decimal     `json:"wallet_balance"`
 }
 
 type LoginResponse struct {
