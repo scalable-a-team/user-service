@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 	"user-service/enums"
 	"user-service/forms"
@@ -130,7 +131,7 @@ func SellerRefreshToken(c *gin.Context) {
 		return
 	}
 	username := claims["username"].(string)
-	userId := claims["user_id"].(uint)
+	userId := claims["user_id"].(uuid.UUID)
 	var user models.Seller
 	if err := user.RetrieveByUsername(c.Request.Context(), username); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

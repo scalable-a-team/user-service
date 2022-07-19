@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -16,7 +17,7 @@ type TokenService struct {
 
 type TokenUserInput struct {
 	Username      string
-	UserID        uint
+	UserID        uuid.UUID
 	RoleGroupName string
 }
 

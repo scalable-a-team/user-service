@@ -1,5 +1,7 @@
 package forms
 
+import "github.com/google/uuid"
+
 type UserSignUp struct {
 	Username  string `form:"username" json:"username" binding:"required"`
 	Password  string `form:"password" json:"password" binding:"required"`
@@ -34,7 +36,7 @@ type UserGroupResponse struct {
 }
 
 type UserResponse struct {
-	ID            uint                `json:"id"`
+	ID            uuid.UUID           `json:"id"`
 	Username      string              `json:"username"`
 	Profile       UserProfileResponse `json:"profile"`
 	Group         UserGroupResponse   `json:"group"`

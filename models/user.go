@@ -3,18 +3,22 @@ package models
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"html"
 	"strings"
+	"time"
 	"user-service/db"
 	"user-service/forms"
 )
 
 type Buyer struct {
-	gorm.Model
-	Username     string
+	ID           uuid.UUID `gorm:"primarykey;type:uuid"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Username     string `gorm:"uniqueIndex"`
 	Password     string
 	BuyerProfile BuyerProfile `gorm:"OnDelete:CASCADE"`
 	BuyerWallet  BuyerWallet
@@ -24,13 +28,13 @@ type BuyerProfile struct {
 	gorm.Model
 	FirstName string
 	LastName  string
-	BuyerID   uint
+	BuyerID   uuid.UUID `gorm:"type:uuid"`
 }
 
 type BuyerWallet struct {
 	gorm.Model
 	Balance uint
-	BuyerID uint
+	BuyerID uuid.UUID `gorm:"type:uuid"`
 }
 
 func (u *Buyer) RetrieveByUsername(c context.Context, username string) error {
@@ -113,7 +117,7 @@ func (u *Buyer) Login(c context.Context, form forms.UserSignIn) (bool, error) {
 }
 
 func (u *Buyer) BeforeCreate(tx *gorm.DB) error {
-
+	u.ID = uuid.New()
 	//turn password into hash
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -155,8 +159,10 @@ func (u *Buyer) AddBalance(c context.Context, input forms.AddWalletBalanceInput)
 }
 
 type Seller struct {
-	gorm.Model
-	Username      string
+	ID            uuid.UUID `gorm:"primarykey;type:uuid"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Username      string `gorm:"uniqueIndex"`
 	Password      string
 	SellerProfile SellerProfile `gorm:"OnDelete:CASCADE"`
 	SellerWallet  SellerWallet
@@ -165,14 +171,14 @@ type Seller struct {
 type SellerWallet struct {
 	gorm.Model
 	Balance  uint
-	SellerID uint
+	SellerID uuid.UUID `gorm:"type:uuid"`
 }
 
 type SellerProfile struct {
 	gorm.Model
 	FirstName string
 	LastName  string
-	SellerID  uint
+	SellerID  uuid.UUID `gorm:"type:uuid"`
 }
 
 func (u *Seller) RetrieveByUsername(c context.Context, username string) error {
@@ -255,7 +261,7 @@ func (u *Seller) Login(c context.Context, form forms.UserSignIn) (bool, error) {
 }
 
 func (u *Seller) BeforeCreate(tx *gorm.DB) error {
-
+	u.ID = uuid.New()
 	//turn password into hash
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
