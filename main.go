@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 	"user-service/controllers"
 	"user-service/db"
 	_ "user-service/docs"
@@ -54,6 +55,14 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	if _, isCitusEnabled := os.LookupEnv("CITUS_ENABLED"); isCitusEnabled {
+		time.Sleep(30 * time.Second)
+		if err := dbInstance.Exec("SELECT create_distributed_table('sellers', 'id')").Error; err != nil {
+			fmt.Println(err)
+			panic("create distributed failed")
+		}
+	}
+
 	r := gin.Default()
 	r.Use(otelgin.Middleware("UserService"))
 	// the jwt middleware
