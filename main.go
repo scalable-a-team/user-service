@@ -42,9 +42,11 @@ func main() {
 	cleanUp := otl.InitTracer()
 	defer cleanUp(context.Background())
 	port := os.Getenv("PORT")
+	_, isCitusEnabled := os.LookupEnv("CITUS_ENABLED")
 
-	if _, isCitusEnabled := os.LookupEnv("CITUS_ENABLED"); isCitusEnabled {
-		time.Sleep(1 * time.Minute)
+	if isCitusEnabled {
+		// Wait for Citus nodes fully synchronized
+		time.Sleep(75 * time.Second)
 	}
 	dbInstance := db.Init()
 	err := dbInstance.AutoMigrate(
@@ -59,9 +61,11 @@ func main() {
 		fmt.Println(err)
 	}
 
-	if err := db.InitDistributedTable(dbInstance); err != nil {
-		fmt.Println("some issue creating distributed table")
-		log.Fatal(err)
+	if isCitusEnabled {
+		if err := db.InitDistributedTable(dbInstance); err != nil {
+			fmt.Println("creating Citus distributed table failed")
+			log.Fatal(err)
+		}
 	}
 
 	r := gin.Default()
