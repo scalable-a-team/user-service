@@ -44,7 +44,7 @@ func main() {
 	port := os.Getenv("PORT")
 
 	if _, isCitusEnabled := os.LookupEnv("CITUS_ENABLED"); isCitusEnabled {
-		time.Sleep(30 * time.Second)
+		time.Sleep(1 * time.Minute)
 	}
 	dbInstance := db.Init()
 	err := dbInstance.AutoMigrate(
