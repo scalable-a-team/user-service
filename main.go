@@ -58,12 +58,10 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	if _, isCitusEnabled := os.LookupEnv("CITUS_ENABLED"); isCitusEnabled {
-		if err := dbInstance.Exec("SELECT create_distributed_table('sellers', 'id')").Error; err != nil {
-			fmt.Println("some issue creating distributed table")
-			fmt.Println(err)
-			panic("create distributed failed")
-		}
+
+	if err := db.InitDistributedTable(dbInstance); err != nil {
+		fmt.Println("some issue creating distributed table")
+		log.Fatal(err)
 	}
 
 	r := gin.Default()

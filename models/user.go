@@ -29,13 +29,13 @@ type BuyerProfile struct {
 	gorm.Model
 	FirstName string
 	LastName  string
-	BuyerID   uuid.UUID `gorm:"type:uuid"`
+	BuyerID   uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 type BuyerWallet struct {
 	gorm.Model
 	Balance decimal.Decimal `gorm:"type:decimal(12,2);"`
-	BuyerID uuid.UUID       `gorm:"type:uuid"`
+	BuyerID uuid.UUID       `gorm:"type:uuid;primaryKey"`
 }
 
 func (u *Buyer) RetrieveByUsername(c context.Context, username string) error {
@@ -172,14 +172,14 @@ type Seller struct {
 type SellerWallet struct {
 	gorm.Model
 	Balance  decimal.Decimal `gorm:"type:decimal(12,2);"`
-	SellerID uuid.UUID       `gorm:"type:uuid"`
+	SellerID uuid.UUID       `gorm:"type:uuid;primaryKey"`
 }
 
 type SellerProfile struct {
 	gorm.Model
 	FirstName string
 	LastName  string
-	SellerID  uuid.UUID `gorm:"type:uuid"`
+	SellerID  uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (u *Seller) RetrieveByUsername(c context.Context, username string) error {
