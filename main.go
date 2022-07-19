@@ -43,6 +43,9 @@ func main() {
 	defer cleanUp(context.Background())
 	port := os.Getenv("PORT")
 
+	if _, isCitusEnabled := os.LookupEnv("CITUS_ENABLED"); isCitusEnabled {
+		time.Sleep(30 * time.Second)
+	}
 	dbInstance := db.Init()
 	err := dbInstance.AutoMigrate(
 		&models.Seller{},
@@ -56,8 +59,8 @@ func main() {
 		fmt.Println(err)
 	}
 	if _, isCitusEnabled := os.LookupEnv("CITUS_ENABLED"); isCitusEnabled {
-		time.Sleep(30 * time.Second)
 		if err := dbInstance.Exec("SELECT create_distributed_table('sellers', 'id')").Error; err != nil {
+			fmt.Println("some issue creating distributed table")
 			fmt.Println(err)
 			panic("create distributed failed")
 		}

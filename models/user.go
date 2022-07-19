@@ -15,10 +15,10 @@ import (
 )
 
 type Buyer struct {
-	ID           uuid.UUID `gorm:"primarykey;type:uuid"`
+	ID           uuid.UUID `gorm:"primarykey;type:uuid;uniqueIndex:username_unique"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-	Username     string `gorm:"uniqueIndex"`
+	Username     string `gorm:"uniqueIndex:username_unique"`
 	Password     string
 	BuyerProfile BuyerProfile `gorm:"OnDelete:CASCADE"`
 	BuyerWallet  BuyerWallet
@@ -159,10 +159,10 @@ func (u *Buyer) AddBalance(c context.Context, input forms.AddWalletBalanceInput)
 }
 
 type Seller struct {
-	ID            uuid.UUID `gorm:"primarykey;type:uuid"`
+	ID            uuid.UUID `gorm:"primarykey;type:uuid;uniqueIndex:username_unique"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
-	Username      string `gorm:"uniqueIndex"`
+	Username      string `gorm:"uniqueIndex:username_unique"`
 	Password      string
 	SellerProfile SellerProfile `gorm:"OnDelete:CASCADE"`
 	SellerWallet  SellerWallet
