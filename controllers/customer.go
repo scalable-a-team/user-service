@@ -135,7 +135,11 @@ func BuyerRefreshTokenHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	userID := claims["userid"].(uuid.UUID)
+	userID, err := uuid.Parse(claims["userid"].(string))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	var user models.Buyer
 	if err := user.RetrieveByUserID(c.Request.Context(), userID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

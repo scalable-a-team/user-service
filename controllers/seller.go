@@ -131,7 +131,11 @@ func SellerRefreshToken(c *gin.Context) {
 		return
 	}
 	username := claims["username"].(string)
-	userId := claims["userid"].(uuid.UUID)
+	userId, err := uuid.Parse(claims["userid"].(string))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	var user models.Seller
 	if err := user.RetrieveByUserID(c.Request.Context(), userId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

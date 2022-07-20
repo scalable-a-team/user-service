@@ -63,7 +63,10 @@ func (tg *TokenService) GetUserIDFromToken(accessToken string) (uuid.UUID, error
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// Get the user record from database or
 		// run through your business logic to verify if the user can log in
-		userID := claims["userid"].(uuid.UUID)
+		userID, err := uuid.Parse(claims["userid"].(string))
+		if err != nil {
+			return uuid.Nil, err
+		}
 		return userID, nil
 	}
 	return uuid.Nil, errors.New("invalid token")
