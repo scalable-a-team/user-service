@@ -81,7 +81,7 @@ func (tg *TokenService) GenerateRefreshToken(user *TokenUserInput) (string, erro
 	rtClaims["group"] = user.RoleGroupName
 	rtClaims["exp"] = time.Now().Add(tg.RefreshExpireTime).Unix()
 
-	rt, err := refreshToken.SignedString(tg.SecretKey)
+	rt, err := refreshToken.SignedString(append(tg.SecretKey, []byte("refresh")...))
 	if err != nil {
 		return "", err
 	}
@@ -97,7 +97,7 @@ func (tg *TokenService) ValidateRefreshAccessToken(refreshToken string) (jwt.Map
 		}
 
 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return tg.SecretKey, nil
+		return append(tg.SecretKey, []byte("refresh")...), nil
 	})
 	if err != nil {
 		return nil, err
