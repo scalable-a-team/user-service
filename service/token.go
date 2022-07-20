@@ -19,6 +19,8 @@ type TokenUserInput struct {
 	Username      string
 	UserID        uuid.UUID
 	RoleGroupName string
+	Firstname     string
+	Lastname      string
 }
 
 func (tg *TokenService) GenerateAccessToken(user *TokenUserInput) (string, error) {
@@ -33,6 +35,8 @@ func (tg *TokenService) GenerateAccessToken(user *TokenUserInput) (string, error
 	claims["userid"] = user.UserID
 	claims["iss"] = tg.ISS
 	claims["group"] = user.RoleGroupName
+	claims["firstname"] = user.Firstname
+	claims["lastname"] = user.Lastname
 	claims["exp"] = time.Now().Add(tg.AccessExpireTime).Unix()
 
 	// Generate encoded token and send it as response.

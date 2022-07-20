@@ -43,6 +43,8 @@ func SellerLogin(c *gin.Context) {
 		Username:      userModel.Username,
 		UserID:        userModel.ID,
 		RoleGroupName: enums.Seller,
+		Firstname:     userModel.SellerProfile.FirstName,
+		Lastname:      userModel.SellerProfile.LastName,
 	}
 	tokenString, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
@@ -91,6 +93,8 @@ func SellerRegister(c *gin.Context) {
 		Username:      newUser.Username,
 		UserID:        newUser.ID,
 		RoleGroupName: enums.Seller,
+		Firstname:     newUser.SellerProfile.FirstName,
+		Lastname:      newUser.SellerProfile.LastName,
 	}
 
 	tokenString, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
@@ -137,7 +141,7 @@ func SellerRefreshToken(c *gin.Context) {
 		return
 	}
 	var user models.Seller
-	if err := user.RetrieveByUserID(c.Request.Context(), userId); err != nil {
+	if err := user.RetrieveByUserIDWithProfile(c.Request.Context(), userId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -147,6 +151,8 @@ func SellerRefreshToken(c *gin.Context) {
 			Username:      username,
 			UserID:        userId,
 			RoleGroupName: enums.Seller,
+			Firstname:     user.SellerProfile.FirstName,
+			Lastname:      user.SellerProfile.LastName,
 		},
 	)
 	if err != nil {

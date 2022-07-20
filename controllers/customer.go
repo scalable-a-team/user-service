@@ -43,6 +43,8 @@ func BuyerLogin(c *gin.Context) {
 		Username:      userModel.Username,
 		UserID:        userModel.ID,
 		RoleGroupName: enums.Buyer,
+		Firstname:     userModel.BuyerProfile.FirstName,
+		Lastname:      userModel.BuyerProfile.LastName,
 	}
 	tokenString, err := middlewares.GetCustomerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
@@ -91,6 +93,8 @@ func RegisterCustomer(c *gin.Context) {
 		Username:      newUser.Username,
 		UserID:        newUser.ID,
 		RoleGroupName: enums.Buyer,
+		Firstname:     newUser.BuyerProfile.FirstName,
+		Lastname:      newUser.BuyerProfile.LastName,
 	}
 	tokenString, err := middlewares.GetCustomerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
@@ -141,7 +145,7 @@ func BuyerRefreshTokenHandler(c *gin.Context) {
 		return
 	}
 	var user models.Buyer
-	if err := user.RetrieveByUserID(c.Request.Context(), userID); err != nil {
+	if err := user.RetrieveByUserIDWithProfile(c.Request.Context(), userID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -149,6 +153,8 @@ func BuyerRefreshTokenHandler(c *gin.Context) {
 		Username:      user.Username,
 		UserID:        user.ID,
 		RoleGroupName: enums.Buyer,
+		Firstname:     user.BuyerProfile.FirstName,
+		Lastname:      user.BuyerProfile.LastName,
 	}
 	accessToken, err := middlewares.GetCustomerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
