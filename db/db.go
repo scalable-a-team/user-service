@@ -39,5 +39,5 @@ func Init() *gorm.DB {
 }
 
 func GetDB(c context.Context) *gorm.DB {
-	return db.WithContext(c)
+	return db.WithContext(c).Unscoped()
 }

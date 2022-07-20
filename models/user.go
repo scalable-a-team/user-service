@@ -140,7 +140,7 @@ func (u *Buyer) AddBalance(c context.Context, input forms.AddWalletBalanceInput)
 		if err := tx.
 			Model(&tmpWallet).
 			Where("ID = ?", u.BuyerWallet.ID).
-			Clauses(clause.Locking{Strength: "UPDATE"}).Find(&tmpWallet).Error; err != nil {
+			Clauses(clause.Locking{Strength: "UPDATE"}).First(&tmpWallet).Error; err != nil {
 			return err
 		}
 		updatedBalance = tmpWallet.Balance.Add(input.AddBalance)
