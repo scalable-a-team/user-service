@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 	"user-service/enums"
 	"user-service/forms"
@@ -134,9 +135,9 @@ func BuyerRefreshTokenHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	username := claims["username"].(string)
+	userID := claims["userid"].(uuid.UUID)
 	var user models.Buyer
-	if err := user.RetrieveByUsername(c.Request.Context(), username); err != nil {
+	if err := user.RetrieveByUserID(c.Request.Context(), userID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -167,14 +168,14 @@ func BuyerRefreshTokenHandler(c *gin.Context) {
 func GetBuyerProfileHandler(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	tokenString := authHeader[len("Bearer "):]
-	username, err := middlewares.GetCustomerJwtMiddleware().GetUsernameFromToken(tokenString)
+	userID, err := middlewares.GetCustomerJwtMiddleware().GetUserIDFromToken(tokenString)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	user := models.Buyer{}
 
-	err = user.RetrieveByUsernameWithProfile(c.Request.Context(), username)
+	err = user.RetrieveByUserIDWithProfile(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -221,14 +222,14 @@ func AddBuyerWalletBalance(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	tokenString := authHeader[len("Bearer "):]
 
-	username, err := middlewares.GetCustomerJwtMiddleware().GetUsernameFromToken(tokenString)
+	userID, err := middlewares.GetCustomerJwtMiddleware().GetUserIDFromToken(tokenString)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	user := models.Buyer{}
 
-	err = user.RetrieveByUsernameWithProfile(c.Request.Context(), username)
+	err = user.RetrieveByUserIDWithProfile(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

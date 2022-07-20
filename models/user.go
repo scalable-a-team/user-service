@@ -38,16 +38,16 @@ type BuyerWallet struct {
 	BuyerID uuid.UUID       `gorm:"type:uuid;primaryKey"`
 }
 
-func (u *Buyer) RetrieveByUsername(c context.Context, username string) error {
-	if err := db.GetDB(c).Where("username = ?", username).First(u).Error; err != nil {
+func (u *Buyer) RetrieveByUserID(c context.Context, userID uuid.UUID) error {
+	if err := db.GetDB(c).Where("id = ?", userID).First(u).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *Buyer) RetrieveByUsernameWithProfile(c context.Context, username string) error {
+func (u *Buyer) RetrieveByUserIDWithProfile(c context.Context, userID uuid.UUID) error {
 	if err := db.GetDB(c).
-		Where("username = ?", username).
+		Where("id = ?", userID).
 		Preload("BuyerProfile").
 		Preload("BuyerWallet").
 		First(u).
@@ -182,16 +182,16 @@ type SellerProfile struct {
 	SellerID  uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
-func (u *Seller) RetrieveByUsername(c context.Context, username string) error {
-	if err := db.GetDB(c).Where("username = ?", username).First(u).Error; err != nil {
+func (u *Seller) RetrieveByUserID(c context.Context, userID uuid.UUID) error {
+	if err := db.GetDB(c).Where("id = ?", userID).First(u).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *Seller) RetrieveByUsernameWithProfile(c context.Context, username string) error {
+func (u *Seller) RetrieveByUserIDWithProfile(c context.Context, userID uuid.UUID) error {
 	if err := db.GetDB(c).
-		Where("username = ?", username).
+		Where("id = ?", userID).
 		Preload("SellerProfile").
 		Preload("SellerWallet").
 		First(u).

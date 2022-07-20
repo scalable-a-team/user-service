@@ -47,7 +47,7 @@ func (tg *TokenService) GenerateAccessToken(user *TokenUserInput) (string, error
 	return t, nil
 }
 
-func (tg *TokenService) GetUsernameFromToken(accessToken string) (string, error) {
+func (tg *TokenService) GetUserIDFromToken(accessToken string) (uuid.UUID, error) {
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -58,15 +58,15 @@ func (tg *TokenService) GetUsernameFromToken(accessToken string) (string, error)
 		return tg.SecretKey, nil
 	})
 	if err != nil {
-		return "", err
+		return uuid.Nil, err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// Get the user record from database or
 		// run through your business logic to verify if the user can log in
-		username := claims["username"].(string)
-		return username, nil
+		userID := claims["userid"].(uuid.UUID)
+		return userID, nil
 	}
-	return "", errors.New("invalid token")
+	return uuid.Nil, errors.New("invalid token")
 }
 
 func (tg *TokenService) GenerateRefreshToken(user *TokenUserInput) (string, error) {

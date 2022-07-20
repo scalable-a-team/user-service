@@ -131,9 +131,9 @@ func SellerRefreshToken(c *gin.Context) {
 		return
 	}
 	username := claims["username"].(string)
-	userId := claims["user_id"].(uuid.UUID)
+	userId := claims["userid"].(uuid.UUID)
 	var user models.Seller
-	if err := user.RetrieveByUsername(c.Request.Context(), username); err != nil {
+	if err := user.RetrieveByUserID(c.Request.Context(), userId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -166,14 +166,14 @@ func SellerRefreshToken(c *gin.Context) {
 func GetSellerProfile(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	tokenString := authHeader[len("Bearer "):]
-	username, err := middlewares.GetSellerJwtMiddleware().GetUsernameFromToken(tokenString)
+	userID, err := middlewares.GetSellerJwtMiddleware().GetUserIDFromToken(tokenString)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	user := models.Seller{}
 
-	err = user.RetrieveByUsernameWithProfile(c.Request.Context(), username)
+	err = user.RetrieveByUserIDWithProfile(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
