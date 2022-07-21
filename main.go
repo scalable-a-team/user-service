@@ -86,7 +86,7 @@ func main() {
 	sellerRouter := r.Group("/api/user/seller")
 	sellerRouter.POST("/login", controllers.SellerLogin)
 	sellerRouter.POST("/register", controllers.SellerRegister)
-	sellerRouter.GET("/refresh_token", controllers.SellerRefreshToken)
+	sellerRouter.POST("/refresh_token", controllers.SellerRefreshToken)
 	sellerRouter.GET("/profile", controllers.GetSellerProfile)
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {
