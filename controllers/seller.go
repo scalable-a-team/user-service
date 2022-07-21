@@ -129,12 +129,17 @@ func SellerRegister(c *gin.Context) {
 // @Router /seller/refresh_token [post]
 func SellerRefreshToken(c *gin.Context) {
 	var input forms.RefreshTokenRequest
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	claims, err := middlewares.GetSellerJwtMiddleware().ValidateRefreshAccessToken(input.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	username := claims["username"].(string)
 	userId, err := uuid.Parse(claims["userid"].(string))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -145,16 +150,14 @@ func SellerRefreshToken(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	accessToken, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(
-		&service.TokenUserInput{
-			Username:      username,
-			UserID:        userId,
-			RoleGroupName: enums.Seller,
-			Firstname:     user.SellerProfile.FirstName,
-			Lastname:      user.SellerProfile.LastName,
-		},
-	)
+	tokenUserInput := service.TokenUserInput{
+		Username:      user.Username,
+		UserID:        user.ID,
+		RoleGroupName: enums.Seller,
+		Firstname:     user.SellerProfile.FirstName,
+		Lastname:      user.SellerProfile.LastName,
+	}
+	accessToken, err := middlewares.GetSellerJwtMiddleware().GenerateAccessToken(&tokenUserInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
